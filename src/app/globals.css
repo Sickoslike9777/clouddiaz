@@ -1,0 +1,35 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Цвета для темной темы */
+  --background: #050505;
+  --foreground: #ffffff;
+  --accent: #22c55e; /* Наш неоновый зеленый */
+}
+
+body {
+  color: var(--foreground);
+  background-color: var(--background);
+  /* Добавим легкий градиент на фон для глубины */
+  background-image: radial-gradient(circle at 50% 0%, #1a1a1a 0%, #050505 70%);
+  min-height: 100vh;
+  /* Плавный скролл для всего сайта */
+  scroll-behavior: smooth;
+}
+
+/* Кастомный скроллбар (тонкий и стильный) */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0a0a0a;
+}
+::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
+}
