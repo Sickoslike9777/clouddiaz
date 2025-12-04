@@ -2,6 +2,11 @@
 
 import { motion } from 'framer-motion';
 import { Trophy, Users, Calendar, Swords, Crown, Target, MapPin } from 'lucide-react';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+// 👇 Импортируем хук авторизации и наше новое окно
+import { useAuth } from '@/context/AuthContext';
+import TournamentModal from '@/components/features/TournamentModal';
 
 const tournaments = [
   {
@@ -67,9 +72,30 @@ const tournaments = [
 ];
 
 export default function TournamentsPage() {
+  const router = useRouter();
+  const { user } = useAuth(); // Проверяем юзера
+  const [selectedTournament, setSelectedTournament] = useState(null); // Для модалки
+
+  const handleJoin = (tournament) => {
+    // 1. Если не вошел - кидаем на логин
+    if (!user) {
+      router.push('/login');
+      return;
+    }
+    // 2. Иначе открываем окно успеха
+    setSelectedTournament(tournament);
+  };
+
   return (
     <main className="min-h-screen bg-[#05050a] text-white pt-28 pb-20">
       
+      {/* 👇 ПОДКЛЮЧАЕМ ОКНО */}
+      <TournamentModal 
+        isOpen={!!selectedTournament} 
+        onClose={() => setSelectedTournament(null)} 
+        tournament={selectedTournament}
+      />
+
       <div className="container mx-auto px-6 mb-12 text-center">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -136,24 +162,6 @@ export default function TournamentsPage() {
                     </div>
                  </div>
 
-                 <div className="mb-6 bg-white/5 rounded-xl p-3 border border-white/5">
-                    <p className="text-[10px] text-gray-500 uppercase tracking-widest mb-2 text-center">Prize Pool</p>
-                    <div className="flex justify-between items-end text-xs">
-                       <div className="text-center flex-1">
-                          <div className="text-gray-400 mb-1">2nd</div>
-                          <div className="font-bold text-gray-200">{t.rewards[1]}</div>
-                       </div>
-                       <div className="text-center flex-1 border-x border-white/10 relative -top-1">
-                          <Crown size={16} className="text-yellow-400 mx-auto mb-1" />
-                          <div className="font-bold text-yellow-400 text-sm">{t.rewards[0]}</div>
-                       </div>
-                       <div className="text-center flex-1">
-                          <div className="text-gray-400 mb-1">3rd</div>
-                          <div className="font-bold text-gray-200">{t.rewards[2]}</div>
-                       </div>
-                    </div>
-                 </div>
-
                  <div className="mb-6">
                     <div className="flex justify-between text-xs mb-2">
                        <span className="text-gray-400 flex items-center gap-1"><Users size={12}/> Players</span>
@@ -170,6 +178,7 @@ export default function TournamentsPage() {
                  </div>
 
                  <button 
+                   onClick={() => handleJoin(t)}
                    disabled={t.status === "FULL"}
                    className={`w-full py-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2 ${
                      t.status === "FULL" 

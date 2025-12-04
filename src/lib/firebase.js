@@ -1,7 +1,8 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
+import { getFirestore } from "firebase/firestore"; // 👇 Импортируем Firestore
 
-// Твои реальные настройки из Firebase
+// Твои настройки (оставь свои ключи)
 const firebaseConfig = {
   apiKey: "AIzaSyAaKUTdQAiEBxTkWXSNcNcnYroOzzrqjM4",
   authDomain: "cloud-diaz.firebaseapp.com",
@@ -12,6 +13,6 @@ const firebaseConfig = {
   measurementId: "G-NP5EPCP88W"
 };
 
-// Инициализация
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
+export const db = getFirestore(app); // 👇 Экспортируем базу данных

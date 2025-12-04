@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageSquare, X, Send, Mic, MicOff, Minus, Bot } from 'lucide-react';
+import { MessageSquare, X, Send, Mic, MicOff, Minus, Bot, ExternalLink } from 'lucide-react';
 
 export default function SupportChat() {
   const [isOpen, setIsOpen] = useState(false);
@@ -14,6 +14,9 @@ export default function SupportChat() {
   const [isListening, setIsListening] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   
+  // 👇 ВПИШИ СЮДА СВОЙ ЮЗЕРНЕЙМ ТЕЛЕГРАМА (без @)
+  const telegramUsername = "KseniaOnishenko"; 
+
   const messagesEndRef = useRef(null);
   const recognitionRef = useRef(null);
 
@@ -21,7 +24,7 @@ export default function SupportChat() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping, isOpen]);
 
-  // Настройка голосового ввода
+  // Инициализация голоса
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -45,84 +48,68 @@ export default function SupportChat() {
 
   const toggleListening = () => {
     if (!recognitionRef.current) return alert("Ваш браузер не поддерживает голосовой ввод");
-    if (isListening) {
-      recognitionRef.current.stop();
-    } else {
-      recognitionRef.current.start();
-    }
+    isListening ? recognitionRef.current.stop() : recognitionRef.current.start();
     setIsListening(!isListening);
   };
 
-  // 🔥 ЛОГИКА УМНЫХ ОТВЕТОВ 🔥
+  // 🔥 УМНАЯ ЛОГИКА ОТВЕТОВ 🔥
   const getSmartResponse = (text) => {
     const lowerText = text.toLowerCase();
 
-    // 1. Вопросы про деньги / оплату
-    if (lowerText.includes('деньг') || lowerText.includes('пополнил') || lowerText.includes('оплат') || lowerText.includes('счет') || lowerText.includes('купил')) {
-      return "Оплата обычно проходит мгновенно, но иногда бывают задержки банков. Если деньги не поступят в течение 3 часов, мы автоматически подключим вас к живому оператору для решения проблемы.";
+    // 1. Оператор / Телеграм
+    if (lowerText.includes('оператор') || lowerText.includes('человек') || lowerText.includes('телеграм') || lowerText.includes('tg') || lowerText.includes('связь')) {
+      return `Я перевел ваш запрос оператору. Пожалуйста, напишите нам в Telegram для быстрого решения: t.me/${telegramUsername}`;
     }
 
-    // 2. Вопросы про лаги / фризы / качество
-    if (lowerText.includes('лаг') || lowerText.includes('фриз') || lowerText.includes('тормоз') || lowerText.includes('fps') || lowerText.includes('качество')) {
-      return "Если возникают лаги, попробуйте переключить сервер в настройках (например, на Франкфурт-2) или проверьте ваше соединение (рекомендуем 5 ГГц Wi-Fi или кабель).";
+    // 2. Деньги
+    if (lowerText.includes('деньг') || lowerText.includes('пополнил') || lowerText.includes('оплат') || lowerText.includes('баланс')) {
+      return "Зачисление обычно мгновенное. Если возникла проблема, нажмите кнопку Telegram сверху и отправьте чек оператору.";
     }
 
-    // 3. Вопросы про сервера / где находятся
-    if (lowerText.includes('сервер') || lowerText.includes('где') || lowerText.includes('пинг') || lowerText.includes('страна')) {
-      return "Наши основные дата-центры расположены во Франкфурте (Германия) и Стокгольме. Это обеспечивает минимальный пинг для всей Европы.";
+    // 3. Лаги
+    if (lowerText.includes('лаг') || lowerText.includes('фриз') || lowerText.includes('качество')) {
+      return "Попробуйте сменить сервер на Франкфурт-2 в настройках. Если не поможет — напишите нам в Telegram (кнопка в шапке чата).";
     }
 
-    // 4. Вопросы про игры
-    if (lowerText.includes('игр') || lowerText.includes('фортнайт') || lowerText.includes('дота') || lowerText.includes('cs')) {
-      return "Все популярные игры уже установлены и обновлены (Fortnite, CS2, Dota 2, Cyberpunk). Вы можете запустить их из каталога за 1 клик.";
+    if (lowerText.includes('игр') || lowerText.includes('фортнайт')) {
+      return "Все игры уже установлены и обновлены. Просто жмите 'Играть'!";
     }
 
-    // 5. Приветствие
-    if (lowerText.includes('привет') || lowerText.includes('здравствуй')) {
-      return "Приветствую! Готов ответить на ваши вопросы по сервису.";
+    if (lowerText.includes('привет')) {
+      return "Приветствую! Готов помочь.";
     }
 
-    // 6. Ответ по умолчанию (если ничего не поняли)
-    return "Я пока обучаюсь и не совсем понял вопрос. Попробуйте перефразировать или посмотрите раздел FAQ.";
+    return "Я пока не понял вопрос. Вы можете написать живому оператору в Telegram (кнопка сверху).";
   };
 
   const handleSendMessage = (e) => {
     e.preventDefault();
     if (!inputText.trim()) return;
 
-    // Сохраняем текст пользователя перед очисткой
-    const userText = inputText;
+    const userText = inputText; 
 
     setMessages((prev) => [...prev, { id: Date.now(), text: userText, sender: 'user' }]);
     setInputText("");
     setIsTyping(true);
 
-    // Задержка имитации печати
     setTimeout(() => {
-      // Получаем умный ответ на основе текста пользователя
       const botResponse = getSmartResponse(userText);
-      
       setMessages((prev) => [...prev, { id: Date.now() + 1, text: botResponse, sender: 'bot' }]);
       setIsTyping(false);
-    }, 1200);
+    }, 1500);
   };
 
   return (
     <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[100] flex flex-col items-end pointer-events-none">
-      
       <AnimatePresence>
         {isOpen && (
           <motion.div
             initial={{ opacity: 0, y: 20, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.9 }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className={`
-              pointer-events-auto bg-[#0f0f16]/95 backdrop-blur-xl border border-white/10 
-              shadow-2xl overflow-hidden flex flex-col mb-3 rounded-2xl origin-bottom-right
-              w-[calc(100vw-32px)] h-[60vh] sm:w-[380px] sm:h-[500px] max-h-[80vh]
-            `}
+            className="pointer-events-auto bg-[#0f0f16]/95 backdrop-blur-xl border border-white/10 shadow-2xl overflow-hidden flex flex-col mb-3 rounded-2xl origin-bottom-right w-[calc(100vw-32px)] h-[60vh] sm:w-[380px] sm:h-[500px] max-h-[80vh]"
           >
+            {/* ШАПКА ЧАТА */}
             <div className="bg-gradient-to-r from-purple-900 to-blue-900 p-4 flex justify-between items-center border-b border-white/10 shrink-0">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center relative">
@@ -131,29 +118,39 @@ export default function SupportChat() {
                 </div>
                 <div>
                   <h3 className="font-bold text-white text-sm">Cloud Support</h3>
-                  <p className="text-[10px] text-cyan-400 font-mono uppercase">AI Assistant v2.0</p>
+                  <p className="text-[10px] text-cyan-400 font-mono uppercase">AI Assistant</p>
                 </div>
               </div>
-              <button onClick={() => setIsOpen(false)} className="p-1 hover:bg-white/10 rounded transition-colors">
-                <Minus size={20} className="text-white/70 hover:text-white" />
-              </button>
+              
+              {/* 👇 КНОПКИ СПРАВА */}
+              <div className="flex items-center gap-2">
+                {/* Кнопка Telegram */}
+                <a 
+                  href={`https://t.me/${telegramUsername}`} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="bg-[#229ED9] hover:bg-[#1b81b0] text-white p-2 rounded-lg transition-colors flex items-center justify-center"
+                  title="Написать в Telegram"
+                >
+                  <Send size={16} className="-ml-0.5 mt-0.5 transform -rotate-45" />
+                </a>
+
+                {/* Свернуть */}
+                <button onClick={() => setIsOpen(false)} className="p-2 hover:bg-white/10 rounded-lg transition-colors">
+                  <Minus size={18} className="text-white/70 hover:text-white" />
+                </button>
+              </div>
             </div>
 
+            {/* ТЕЛО СООБЩЕНИЙ */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-white/10">
               {messages.map((msg) => (
                 <div key={msg.id} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div 
-                    className={`max-w-[85%] p-3 rounded-2xl text-sm leading-relaxed shadow-sm ${
-                      msg.sender === 'user' 
-                      ? 'bg-purple-600 text-white rounded-tr-none' 
-                      : 'bg-[#1a1a24] text-gray-200 rounded-tl-none border border-white/5'
-                    }`}
-                  >
+                  <div className={`max-w-[85%] p-3 rounded-2xl text-sm leading-relaxed shadow-sm ${msg.sender === 'user' ? 'bg-purple-600 text-white rounded-tr-none' : 'bg-[#1a1a24] text-gray-200 rounded-tl-none border border-white/5'}`}>
                     {msg.text}
                   </div>
                 </div>
               ))}
-              
               {isTyping && (
                 <div className="flex justify-start">
                   <div className="bg-[#1a1a24] p-3 rounded-2xl rounded-tl-none border border-white/5 flex gap-1 items-center">
@@ -166,32 +163,14 @@ export default function SupportChat() {
               <div ref={messagesEndRef} />
             </div>
 
+            {/* ВВОД */}
             <form onSubmit={handleSendMessage} className="p-3 bg-[#0a0a10] border-t border-white/10 flex gap-2 items-center shrink-0">
-              <button 
-                type="button" 
-                onClick={toggleListening} 
-                className={`p-3 rounded-xl transition-all ${isListening ? 'bg-red-500 text-white animate-pulse' : 'bg-white/5 text-gray-400 hover:text-white hover:bg-white/10'}`}
-              >
+              <button type="button" onClick={toggleListening} className={`p-3 rounded-xl transition-all ${isListening ? 'bg-red-500 text-white animate-pulse' : 'bg-white/5 text-gray-400 hover:text-white hover:bg-white/10'}`}>
                 {isListening ? <MicOff size={18} /> : <Mic size={18} />}
               </button>
-              
-              <input 
-                type="text" 
-                value={inputText} 
-                onChange={(e) => setInputText(e.target.value)} 
-                placeholder={isListening ? "Слушаю..." : "Сообщение..."} 
-                className="flex-1 bg-transparent text-white text-sm focus:outline-none placeholder-gray-600 h-full py-2" 
-              />
-              
-              <button 
-                type="submit" 
-                disabled={!inputText.trim()} 
-                className="p-3 bg-cyan-500 text-black rounded-xl hover:bg-cyan-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <Send size={18} />
-              </button>
+              <input type="text" value={inputText} onChange={(e) => setInputText(e.target.value)} placeholder={isListening ? "Слушаю..." : "Сообщение..."} className="flex-1 bg-transparent text-white text-sm focus:outline-none placeholder-gray-600 h-full py-2" />
+              <button type="submit" disabled={!inputText.trim()} className="p-3 bg-cyan-500 text-black rounded-xl hover:bg-cyan-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"><Send size={18} /></button>
             </form>
-
           </motion.div>
         )}
       </AnimatePresence>
@@ -215,7 +194,6 @@ export default function SupportChat() {
           </span>
         )}
       </motion.button>
-
     </div>
   );
 }

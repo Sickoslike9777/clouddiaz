@@ -2,6 +2,9 @@
 
 import { motion } from 'framer-motion';
 import { ShoppingCart, Zap, Cpu, MemoryStick } from 'lucide-react';
+import { useState } from 'react';
+// 👇 Импортируем модалку
+import CheckoutModal from '@/components/features/CheckoutModal';
 
 const lumenSeries = [
   {
@@ -48,9 +51,19 @@ const lumenSeries = [
 ];
 
 export default function LumenPage() {
+  // 👇 Состояние для выбранного ПК
+  const [selectedPC, setSelectedPC] = useState(null);
+
   return (
     <main className="min-h-screen bg-[#05050a] text-white pt-24 pb-20">
       
+      {/* 👇 Модальное окно (Открывается если selectedPC не null) */}
+      <CheckoutModal 
+        isOpen={!!selectedPC} 
+        product={selectedPC} 
+        onClose={() => setSelectedPC(null)} 
+      />
+
       <div className="container mx-auto px-6 mb-16 text-center">
         <h1 className="text-4xl md:text-6xl font-black mb-4">СЕРИЯ <span className="text-purple-500">LUMEN</span></h1>
         <p className="text-gray-400">International Delivery Available</p>
@@ -68,11 +81,9 @@ export default function LumenPage() {
               transition={{ delay: index * 0.1 }}
               className={`relative group rounded-[2.5rem] overflow-hidden bg-[#0f0f16] border border-white/5 hover:border-white/20 transition-all duration-500 hover:shadow-2xl ${pc.shadow}`}
             >
-              
               <div className={`absolute top-0 right-0 w-[300px] h-[300px] bg-gradient-to-br ${pc.color} opacity-5 blur-[100px] rounded-full group-hover:opacity-10 transition-opacity`}></div>
 
               <div className="flex flex-col h-full p-8 md:p-10 relative z-10">
-                
                 <div className="flex justify-between items-start mb-6">
                   <div>
                     <h2 className="text-3xl font-black italic tracking-wide mb-2">{pc.model}</h2>
@@ -84,11 +95,7 @@ export default function LumenPage() {
                 </div>
 
                 <div className="relative h-[350px] w-full my-4 flex items-center justify-center">
-                   <img 
-                     src={pc.image} 
-                     alt={pc.model} 
-                     className="max-h-full w-auto object-contain drop-shadow-2xl transition-transform duration-700 group-hover:scale-110"
-                   />
+                   <img src={pc.image} alt={pc.model} className="max-h-full w-auto object-contain drop-shadow-2xl transition-transform duration-700 group-hover:scale-110" />
                 </div>
 
                 <div className="grid grid-cols-3 gap-2 mb-6 bg-white/5 rounded-2xl p-4 border border-white/5">
@@ -108,16 +115,18 @@ export default function LumenPage() {
 
                 <div className="mt-auto">
                    <p className="text-gray-400 text-sm mb-6 leading-relaxed line-clamp-2">{pc.desc}</p>
-                   <button className={`w-full py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 transition-all bg-gradient-to-r ${pc.color} hover:brightness-110 text-white shadow-lg`}>
+                   {/* 👇 КНОПКА ОТКРЫВАЕТ МОДАЛКУ */}
+                   <button 
+                     onClick={() => setSelectedPC(pc)}
+                     className={`w-full py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 transition-all bg-gradient-to-r ${pc.color} hover:brightness-110 text-white shadow-lg`}
+                   >
                      <ShoppingCart size={20} />
                      BUY NOW
                    </button>
                 </div>
-
               </div>
             </motion.div>
           ))}
-
         </div>
       </div>
     </main>
